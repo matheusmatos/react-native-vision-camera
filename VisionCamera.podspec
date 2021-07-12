@@ -2,6 +2,22 @@ require "json"
 
 package = JSON.parse(File.read(File.join(__dir__, "package.json")))
 
+reactVersion = '0.0.0'
+begin
+  reactVersion = JSON.parse(File.read(File.join(__dir__, "..", "react-native", "package.json")))["version"]
+rescue
+  reactVersion = '0.64.0'
+end
+
+rnVersion = reactVersion.split('.')[1]
+folly_name = "Folly"
+if rnVersion.to_i >= 64
+  folly_name = "RCT-Folly"
+end
+
+folly_flags = '-DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1 -DRNVERSION=' + rnVersion
+folly_version = '2020.01.13.00'
+
 Pod::Spec.new do |s|
   s.name         = "VisionCamera"
   s.version      = package["version"]
@@ -16,7 +32,7 @@ Pod::Spec.new do |s|
   s.pod_target_xcconfig = {
     "DEFINES_MODULE" => "YES",
     "USE_HEADERMAP" => "YES",
-    "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/ReactCommon\" \"$(PODS_TARGET_SRCROOT)\" \"$(PODS_ROOT)/Headers/Private/React-Core\" \"$(PODS_ROOT)/Headers/Public/React-hermes\" \"$(PODS_ROOT)/Headers/Public/hermes-engine\""
+    "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/ReactCommon\" \"$(PODS_TARGET_SRCROOT)\" \"$(PODS_ROOT)/#{folly_name}\" \"$(PODS_ROOT)/Headers/Private/React-Core\" \"$(PODS_ROOT)/Headers/Public/React-hermes\" \"$(PODS_ROOT)/Headers/Public/hermes-engine\""
   }
   s.requires_arc = true
 
@@ -45,4 +61,5 @@ Pod::Spec.new do |s|
   s.dependency "React-callinvoker"
   s.dependency "React"
   s.dependency "React-Core"
+  s.dependency "#{folly_name}"
 end
