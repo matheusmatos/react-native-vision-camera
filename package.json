@@ -1,5 +1,5 @@
 {
-  "name": "react-native-vision-camera",
+  "name": "react-native-vision-camera-mmatos",
   "version": "2.4.2-beta.9",
   "description": "The Camera library that sees the vision.",
   "main": "lib/commonjs/index",
@@ -59,7 +59,7 @@
     "qr-code",
     "scanner"
   ],
-  "repository": "https://github.com/mrousavy/react-native-vision-camera",
+  "repository": "https://github.com/matheusmatos/react-native-vision-camera",
   "author": "Marc Rousavy <marcrousavy@hotmail.com> (https://github.com/mrousavy)",
   "license": "MIT",
   "bugs": {
