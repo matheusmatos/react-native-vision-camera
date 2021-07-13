@@ -1,11 +1,8 @@
 require "json"
 
 package = JSON.parse(File.read(File.join(__dir__, "package.json")))
-
-folly_flags = '-DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1'
-folly_compiler_flags = folly_flags + ' ' + '-Wno-comma -Wno-shorten-64-to-32'
-folly_version = '2020.01.13.00'
-boost_compiler_flags = '-Wno-documentation'
+reactNativePackage = JSON.parse(File.read(File.join(__dir__, "..", "react-native", "package.json")))
+isRN63 = reactNativePackage["version"].split('.')[1] == '63' rescue false
 
 Pod::Spec.new do |s|
   s.name         = "VisionCamera"
@@ -24,12 +21,20 @@ Pod::Spec.new do |s|
     "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/ReactCommon\" \"$(PODS_TARGET_SRCROOT)\" \"$(PODS_ROOT)/Headers/Private/React-Core\" "
   }
   s.requires_arc = true
-  s.compiler_flags = folly_compiler_flags + ' ' + boost_compiler_flags
-  s.xcconfig = {
-    "CLANG_CXX_LANGUAGE_STANDARD" => "c++14",
-    "HEADER_SEARCH_PATHS" => "$(inherited) \"$(PODS_TARGET_SRCROOT)/ReactCommon\" \"$(PODS_ROOT)/boost-for-react-native\" \"$(PODS_ROOT)/glog\" \"$(PODS_ROOT)/RCT-Folly\" \"${PODS_ROOT}/Headers/Public/React-hermes\" \"${PODS_ROOT}/Headers/Public/hermes-engine\"",
-    "OTHER_CFLAGS" => "$(inherited)" + " " + folly_flags
-  }
+
+  # RN 0.63 workaround
+  if isRN63
+    folly_flags = '-DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1'
+    folly_compiler_flags = folly_flags + ' ' + '-Wno-comma -Wno-shorten-64-to-32'
+    boost_compiler_flags = '-Wno-documentation'
+
+    s.compiler_flags = folly_compiler_flags + ' ' + boost_compiler_flags
+    s.xcconfig = {
+      "CLANG_CXX_LANGUAGE_STANDARD" => "c++14",
+      "HEADER_SEARCH_PATHS" => "$(inherited) \"$(PODS_TARGET_SRCROOT)/ReactCommon\" \"$(PODS_ROOT)/boost-for-react-native\" \"$(PODS_ROOT)/glog\" \"$(PODS_ROOT)/Folly\" \"${PODS_ROOT}/Headers/Public/React-hermes\" \"${PODS_ROOT}/Headers/Public/hermes-engine\"",
+      "OTHER_CFLAGS" => "$(inherited)" + " " + folly_flags
+    }
+  end
 
   # All source files that should be publicly visible
   # Note how this does not include headers, since those can nameclash.
@@ -53,8 +58,15 @@ Pod::Spec.new do |s|
     "ios/**/*.h"
   ]
 
-  s.dependency "React-callinvoker"
-  s.dependency "React-Core"
-  s.dependency "ReactCommon/turbomodule/core"
-  s.dependency "RCT-Folly", folly_version
+  # RN 0.63 workaround
+  if isRN63
+    s.dependency "React-callinvoker"
+    s.dependency "React-Core"
+    s.dependency "ReactCommon/turbomodule/core"
+    s.dependency "Folly", '2020.01.13.00'
+  else
+    s.dependency "React-callinvoker"
+    s.dependency "React"
+    s.dependency "React-Core"
+  end
 end
